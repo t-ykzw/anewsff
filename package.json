@@ -1,0 +1,19 @@
+{
+  "name": "anewsff",
+  "version": "1.0.0",
+  "description": "anews full feed",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@crxjs/vite-plugin": "^1.0.14",
+    "@types/chrome": "^0.0.251",
+    "hotkeys-js": "^3.12.0",
+    "typescript": "^5.2.2",
+    "vite": "^2.9.16"
+  }
+}
