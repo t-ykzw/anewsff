@@ -48,18 +48,23 @@ const onMessageHandler = async (
 };
 
 const fetchContent = async (href: string, senderId: number): Promise<void> => {
+  console.log(`background:fetchContent:${href}`);
   const u = new URL(href);
   const res = await fetch(u);
   const header = res.headers;
   const type = header.get("content-type");
-  const content = await res.text();
-  chrome.tabs.sendMessage(senderId, {
+  const content = await res.text(); // TODO: Sanitize, Extract main content
+  console.log(`background:fetchContent:done:${href}, ${type}, ${content}, `);
+  const sendBack = {
     anewsff: 1,
     command: "fetch",
-    status: `${res.status}`,
-    href,
-    content,
-  });
+    results: {
+      status: `${res.status}`,
+      href,
+      content,
+    },
+  };
+  chrome.tabs.sendMessage(senderId, sendBack);
 };
 const cancelFetchContent = (href: string): void => {};
 const cancelAllFetch = (): void => {};
