@@ -1,4 +1,6 @@
 import hotkeys from "hotkeys-js";
+import { sanitize } from "isomorphic-dompurify";
+
 import ContentProxy, { ContentInfo } from "./contentproxy";
 
 type KeyStroke = string;
@@ -99,9 +101,12 @@ class PageApp {
 
   createFullContentBlock(ci: ContentInfo): HTMLDivElement {
     const ffBlock = document.createElement("div");
-    const ta = document.createElement("div");
-    ta.setAttribute("class", "anewsff-content");
-    ta.textContent = ci.content;
+    ffBlock.setAttribute("class", "anewsff-content");
+    const ta = document.createElement("iframe");
+    ta.srcdoc = extractHtmlArticleContent(ci.content);
+    ta.width = "100%";
+    ta.height = "300px";
+
     ffBlock.appendChild(ta);
     return ffBlock;
   }
@@ -149,6 +154,11 @@ class HomeApp extends PageApp {
       reqBlock.appendChild(ffBlock);
     });
   }
+}
+
+function extractHtmlArticleContent(html: string): string {
+  const cleaned = sanitize(html);
+  return cleaned;
 }
 
 const pageAppSelector = (page: string): PageApp | null => {

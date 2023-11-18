@@ -53,15 +53,21 @@ const fetchContent = async (href: string, senderId: number): Promise<void> => {
   const res = await fetch(u);
   const header = res.headers;
   const type = header.get("content-type");
-  const content = await res.text(); // TODO: Sanitize, Extract main content
-  console.log(`background:fetchContent:done:${href}, ${type}, ${content}, `);
+  let content = "";
+  if (type?.startsWith("text/html")) {
+    const text = await res.text(); // TODO: Sanitize, Extract main content
+    content = text;
+  }
   const sendBack = {
     anewsff: 1,
     command: "fetch",
     results: {
-      status: `${res.status}`,
       href,
-      content,
+      ci: {
+        status: `${res.status}`,
+        type,
+        content,
+      },
     },
   };
   chrome.tabs.sendMessage(senderId, sendBack);

@@ -1,4 +1,4 @@
-type ContentInfo = { status: string; content: string };
+type ContentInfo = { status: string; content: string; type: string };
 type CPEvent = "fetchDone";
 type FetchDoneCallBack = (ci: ContentInfo) => void;
 type CPEventCallback = FetchDoneCallBack;
@@ -25,8 +25,8 @@ class ContentProxy {
       const command = response as AnewsFFResponseMessage;
       switch (command.command) {
         case "fetch":
-          const { href, status, content } = command.results;
-          this.onFetchDone({ href, status, content });
+          const { href, ci } = command.results;
+          this.onFetchDone(href, ci);
           break;
       }
     };
@@ -47,21 +47,13 @@ class ContentProxy {
     });
     chrome.runtime.sendMessage({ anewsff: 1, command: "fetch", args: [href] });
   }
-  onFetchDone({
-    href,
-    status,
-    content,
-  }: {
-    href: string;
-    status: string;
-    content: string;
-  }) {
+  onFetchDone(href: string, ci: ContentInfo) {
     console.log(`onFetchDone. ${href}`);
-    this.contents[href] = { status, content };
+    this.contents[href] = ci;
     let cb = this.eventListeners.fetchDone[href].shift();
     while (cb) {
       console.log(`onFetchDone. call cb ${href}`);
-      cb({ status, content });
+      cb(ci);
       cb = this.eventListeners.fetchDone[href].shift();
     }
   }
