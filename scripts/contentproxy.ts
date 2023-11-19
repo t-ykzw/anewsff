@@ -59,5 +59,9 @@ class ContentProxy {
   }
 }
 
-export default ContentProxy;
-export type { ContentInfo };
+const CONTENT_PROXY = new ContentProxy();
+function getContentProxy() {
+  return CONTENT_PROXY;
+}
+export { getContentProxy };
+export type { ContentInfo, ContentProxy };

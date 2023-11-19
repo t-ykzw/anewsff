@@ -1,7 +1,8 @@
 import hotkeys from "hotkeys-js";
 import { sanitize } from "isomorphic-dompurify";
 
-import ContentProxy, { ContentInfo } from "./contentproxy";
+import { getContentProxy } from "./contentproxy";
+import type { ContentProxy, ContentInfo } from "./contentproxy";
 
 type KeyStroke = string;
 type PageEventType =
@@ -33,7 +34,7 @@ class PageApp {
     this.items = [];
     this.itemCursors = [];
     this.columnCoursor = 1;
-    this.contentProxy = new ContentProxy();
+    this.contentProxy = getContentProxy();
     this.keyEventMap = DefaultKeyEventMap;
   }
   init() {
