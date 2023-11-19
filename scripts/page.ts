@@ -7,6 +7,8 @@ type KeyStroke = string;
 type PageEventType =
   | "scrollDown"
   | "scrollUp"
+  | "scrollLeft"
+  | "scrollRight"
   | "loadOriginalPage"
   | "closeOriginalPage"
   | "gotoOriginalPage"
@@ -23,12 +25,14 @@ const DefaultKeyEventMap: KeyEventMap = {
 
 class PageApp {
   contentProxy: ContentProxy;
-  items: HTMLElement[];
-  cursor: number;
+  items: HTMLElement[][];
+  itemCursors: number[];
+  columnCoursor: number;
   keyEventMap: KeyEventMap;
   constructor() {
     this.items = [];
-    this.cursor = 0;
+    this.itemCursors = [];
+    this.columnCoursor = 1;
     this.contentProxy = new ContentProxy();
     this.keyEventMap = DefaultKeyEventMap;
   }
@@ -44,14 +48,12 @@ class PageApp {
   }
   run() {}
   current() {
+    const cc = this.columnCoursor;
+    const ic = this.itemCursors[cc];
     let c =
-      this.cursor < 0
-        ? 0
-        : this.cursor >= this.items.length
-        ? this.items.length - 1
-        : this.cursor;
+      ic < 0 ? 0 : ic >= this.items[cc].length ? this.items[cc].length - 1 : ic;
 
-    return this.items[c];
+    return this.items[cc][c];
   }
 
   scrollToCurrent() {
@@ -67,21 +69,29 @@ class PageApp {
     }
   }
   scrollDown() {
-    console.log(`scrollDown:${this.cursor}`);
-    if (this.cursor === this.items.length - 1) {
+    console.log(
+      `scrollDown:${this.columnCoursor}, ${
+        this.itemCursors[this.columnCoursor]
+      }`
+    );
+    const cc = this.columnCoursor;
+    if (this.itemCursors[cc] === this.items[cc].length - 1) {
       console.log("no more");
     } else {
-      this.cursor += 1;
+      this.itemCursors[cc] += 1;
     }
     this.scrollToCurrent();
   }
 
   scrollUp() {
-    console.log(`scrollUp:${this.cursor}`);
-    if (this.cursor === 0) {
+    console.log(
+      `scrollUp:${this.columnCoursor}, ${this.itemCursors[this.columnCoursor]}`
+    );
+    const cc = this.columnCoursor;
+    if (this.itemCursors[cc] === 0) {
       console.log("no more");
     } else {
-      this.cursor -= 1;
+      this.itemCursors[cc] -= 1;
     }
     this.scrollToCurrent();
   }
@@ -98,7 +108,14 @@ class PageApp {
     // タグ・メモしてマーク呼びたい
     console.log(`markThisArticle not implemented.`);
   }
-
+  scrollLeft() {
+    this.columnCoursor += 1;
+    this.columnCoursor %= this.items.length;
+  }
+  scrollRight() {
+    this.columnCoursor += this.items.length - 1;
+    this.columnCoursor %= this.items.length;
+  }
   createFullContentBlock(ci: ContentInfo): HTMLDivElement {
     const ffBlock = document.createElement("div");
     ffBlock.setAttribute("class", "anewsff-content");
@@ -118,11 +135,15 @@ class HomeApp extends PageApp {
     const cards = document.querySelectorAll<HTMLElement>(".document-card");
     console.log(`cards: ${cards ? cards.length : "no"}`);
     if (cards) {
-      this.items = Array.from(cards);
-      this.cursor = -1;
+      this.items = [[], Array.from(cards), []];
+      this.columnCoursor = 1;
+      this.itemCursors = [-1, -1, -1];
     }
   }
   loadOriginalPage(): void {
+    if (this.columnCoursor !== 1) {
+      return;
+    }
     const cur = this.current();
     if (!cur) {
       return;
@@ -135,6 +156,10 @@ class HomeApp extends PageApp {
     this.requestContent(u, cur);
   }
   gotoOriginalPage(): void {
+    if (this.columnCoursor !== 1) {
+      return;
+    }
+
     const cur = this.current();
     if (!cur) {
       return;
@@ -165,7 +190,7 @@ const pageAppSelector = (page: string): PageApp | null => {
   if (page === "/") {
     return new HomeApp();
   }
-  return null;
+  return new PageApp();
 };
 
 export { pageAppSelector };
