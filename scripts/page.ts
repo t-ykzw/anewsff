@@ -6,6 +6,7 @@ import type { ContentProxy, ContentInfo } from "./contentproxy";
 
 type KeyStroke = string;
 type PageEventType =
+  | "reloadPage"
   | "scrollDown"
   | "scrollUp"
   | "scrollLeft"
@@ -22,7 +23,9 @@ const DefaultKeyEventMap: KeyEventMap = {
   q: "closeOriginalPage",
   enter: "gotoOriginalPage",
   t: "markThisArticle",
+  r: "reloadPage",
 };
+const ANEWSFF_CONTENT_BLOCK_ID = "anewsff-content-block";
 
 class PageApp {
   contentProxy: ContentProxy;
@@ -55,6 +58,9 @@ class PageApp {
       ic < 0 ? 0 : ic >= this.items[cc].length ? this.items[cc].length - 1 : ic;
 
     return this.items[cc][c];
+  }
+  reloadPage() {
+    location.reload();
   }
 
   scrollToCurrent() {
@@ -101,6 +107,10 @@ class PageApp {
   }
   closeOriginalPage() {
     console.log(`closeOriginalPage not implemented.`);
+    const original = document.querySelector(`#${ANEWSFF_CONTENT_BLOCK_ID}`);
+    if (original) {
+      original.parentElement?.removeChild(original);
+    }
   }
   gotoOriginalPage() {
     console.log(`closeOriginalPage not implemented.`);
@@ -121,10 +131,10 @@ class PageApp {
     const ffBlock = document.createElement("div");
     ffBlock.setAttribute("class", "anewsff-content");
     const ta = document.createElement("iframe");
-    ta.srcdoc = extractHtmlArticleContent(ci.content);
     ta.width = "100%";
-    ta.height = "300px";
-
+    ta.height = "100%";
+    ta.srcdoc = extractHtmlArticleContent(ci.content);
+    // ta.innerHTML = extractHtmlArticleContent(ci.content); //
     ffBlock.appendChild(ta);
     return ffBlock;
   }
@@ -176,15 +186,31 @@ class HomeApp extends PageApp {
 
   requestContent(url: URL, reqBlock: HTMLElement) {
     this.contentProxy.fetchContent(url.href, (ci: ContentInfo) => {
+      const reqBlockBox = reqBlock.getBoundingClientRect();
       const ffBlock = this.createFullContentBlock(ci);
+      ffBlock.style.width = "" + reqBlockBox.width;
+      // ffBlock.style.zIndex = "9999";
+      ffBlock.style.height = "500px";
+      // // ffBlock.style.overflowY = "scroll";
+
+      // ffBlock.style.position = "absolute";
+      // ffBlock.style.left = `${reqBlockBox.x + reqBlockBox.width}`;
+      // ffBlock.style.top = `${reqBlockBox.top}`;
+      ffBlock.style.backgroundColor = "#eee";
+      // ffBlock.style.border = "1px solid red";
+      ffBlock.id = ANEWSFF_CONTENT_BLOCK_ID;
       reqBlock.appendChild(ffBlock);
     });
   }
 }
 
 function extractHtmlArticleContent(html: string): string {
-  const cleaned = sanitize(html);
-  return cleaned;
+  return html;
+  // const cleaned = sanitize(html, {
+  //   ALLOWED_TAGS: ["style"],
+  //   ALLOWED_ATTR: ["class", "style", "id"],
+  // });
+  // return cleaned;
 }
 
 const pageAppSelector = (page: string): PageApp | null => {
