@@ -214,10 +214,19 @@ function extractHtmlArticleContent(html: string): string {
 }
 
 const pageAppSelector = (page: string): PageApp | null => {
-  if (page === "/") {
-    return new HomeApp();
+  switch (page) {
+    case "/":
+    case "/personal-news":
+    case "/team/industry_news":
+    case "/team/marks":
+      return new HomeApp();
+
+    default:
+      if (page.startsWith("/themes/")) {
+        return new HomeApp();
+      }
+      return new PageApp();
   }
-  return new PageApp();
 };
 
 export { pageAppSelector };
