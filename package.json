@@ -12,7 +12,7 @@
   "dependencies": {
     "@crxjs/vite-plugin": "^1.0.14",
     "@types/chrome": "^0.0.251",
-    "dompurify": "^3.0.6",
+    "dompurify": "^3.1.6",
     "hotkeys-js": "^3.12.0",
     "isomorphic-dompurify": "^1.9.0",
     "typescript": "^5.2.2",
